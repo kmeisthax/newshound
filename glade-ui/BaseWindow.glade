@@ -2,7 +2,12 @@
 <interface>
   <requires lib="gtk+" version="2.16"/>
   <!-- interface-naming-policy project-wide -->
-  <object class="GtkTreeStore" id="NewsSourceTreeModel"/>
+  <object class="GtkTreeStore" id="NewsSourceTreeModel">
+    <columns>
+      <!-- column-name NewsSourceColumn -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkWindow" id="BaseWindow">
     <signal name="destroy" handler="onExit"/>
     <signal name="delete_event" handler="onClosed"/>
@@ -28,7 +33,7 @@
                         <property name="visible">True</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
-                        <signal name="activate" handler="onClosed"/>
+                        <signal name="activate" handler="onMenuQuit"/>
                       </object>
                     </child>
                   </object>
@@ -149,6 +154,18 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="model">NewsSourceTreeModel</property>
+                <signal name="cursor_changed" handler="onChangeSource"/>
+                <child>
+                  <object class="GtkTreeViewColumn" id="NewsSourceColumn">
+                    <property name="title">News Source</property>
+                    <child>
+                      <object class="GtkCellRendererText" id="NewsSourceRowName"/>
+                      <attributes>
+                        <attribute name="text">0</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                </child>
               </object>
               <packing>
                 <property name="resize">False</property>
