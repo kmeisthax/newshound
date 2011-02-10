@@ -3,28 +3,7 @@ from newshound.util import classproperty
 class InvalidAccountException(Exception):
     pass
 
-class BaseSource(object):
-    def __init__(self, account=None, config_data={}):
-        if type(account) != self.account_class and account != None:
-            raise InvalidAccountException
-            
-        self.account = account
-        self.write_config_data(config_data)
-        
-        self.callbacks = {"story":[]}
-
-    @classproperty
-    def config_options(cls):
-        """Return the information needed to configure a source."""
-        return {"url":{"type":"string/url"}}
-    
-    @classproperty
-    def account_class(cls):
-        return BaseAccount
-        
-    def write_config_data(self, config_data):
-        pass
-    
+class BaseSection(object):
     SECTION_SUBSCRIBED = 0
     SECTION_SUGGESTED = 50
     SECTION_UNSUBSRIBED = 100
@@ -78,6 +57,34 @@ class BaseSource(object):
         appropriate callbacks."""
         
         return
+
+
+class BaseSource(BaseSection):
+    def __init__(self, *args, **kwargs):
+        self.callbacks = {"story":[]}
+        
+        super(BaseSection, self).__init__(*args, **kwargs)
+
+    @classproperty
+    def config_options(cls):
+        """Return the information needed to configure a source."""
+        return {"url":{"type":"string/url"}}
+    
+    @classproperty
+    def account_class(cls):
+        return BaseAccount
+        
+    @classproperty
+    def allow_anonymous_reading(cls):
+        return True
+        
+    def write_config_data(self, config_data):
+        #if type(account) != self.account_class:
+        #    if account != None and not self.allow_anonymous_reading:
+        #        raise InvalidAccountException
+            
+        #self.account = account
+        self.url = config_data["url"]
     
 class BaseAccount(object):
     pass
