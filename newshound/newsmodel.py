@@ -3,6 +3,9 @@ from newshound.util import classproperty
 class InvalidAccountException(Exception):
     pass
 
+class BadResponseException(Exception):
+    pass
+
 class BaseSection(object):
     SECTION_SUBSCRIBED = 0
     SECTION_SUGGESTED = 50
