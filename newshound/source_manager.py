@@ -15,17 +15,28 @@ class SourceManager(object):
             entry_path = os.path.join(plugins_dir, entry)
             if os.path.isdir(entry_path):
                 __import__("newshound.plugins." + entry)
-                plugin_modules += sys.modules["newshound.plugins." + entry)
+                plugin_modules += sys.modules["newshound.plugins." + entry]
             elif os.path.isfile(entry_path):
                 entry_spl = os.path.splitext(entry)
                 if entry_spl[1] = ".py":
                     __import__("newshound.plugins." + entry_spl[0])
-                    plugin_modules += sys.modules["newshound.plugins." + entry_spl[0])
+                    plugin_modules += sys.modules["newshound.plugins." + entry_spl[0]]
         
         for module in plugin_modules:
             try:
                 for source_class in module.NEWS_PROVIDERS:
                     self.module_index[source_class] = module
+                    new_module = True
+
+                    for source_instance in self.sources:
+                        if isinstance(source_instance, source_class):
+                            new_module = False
+
+                    if new_module:
+                        try:
+                            self.sources += source_class.default_source
+                        except newsmodel.GenericSourcePlugin:
+                            pass
                 
                 self.source_classes.extend(module.NEWS_PROVIDERS)
             except:
