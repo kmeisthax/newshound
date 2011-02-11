@@ -32,10 +32,17 @@ class SourceManager(object):
                 pass
                 
     def store_source_configuration(self, config_path = None):
+        """Form all the data in the source down to a data dictonary to be serialized to a file somehow."""
         if config_path == None:
-            config_path = os.path.join(*[os.path.expanduser("~"), ".newshound"])
+            config_path = os.path.join(os.path.expanduser("~"), ".newshound")
             
-        source_config_directory = os.path.join(*[config_path, "sources.d"])
-        source_config_file = os.path.join(*[config_path, "sources"])
-        
-        
+        source_config_file = os.path.join(config_path, "sources")
+        source_config_object = {"version":[0,0], "src_classes":[], "sources":[]}
+
+        #gather up all the source classes
+        for source_class in self.source_classes:
+            module = self.module_index[source_class].__name__
+            classname = source_class.__name__
+
+            src_class = {"module":module, "class":classname}
+            source_config_object["src_classes"] += src_class
