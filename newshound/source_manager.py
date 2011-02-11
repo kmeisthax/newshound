@@ -1,6 +1,9 @@
 from newshound import newsmodel
 import os.path, json
 
+CONFIG_MAJOR_VERSION = 0
+CONFIG_MINOR_VERSION = 0
+
 class SourceManager(object):
     def __init__(self):
         self.source_classes = []
@@ -42,18 +45,41 @@ class SourceManager(object):
             except:
                 pass
                 
-    def store_source_configuration(self, config_path = None):
+    def store_config(self):
         """Form all the data in the source down to a data dictonary to be serialized to a file somehow."""
-        if config_path == None:
-            config_path = os.path.join(os.path.expanduser("~"), ".newshound")
-            
-        source_config_file = os.path.join(config_path, "sources")
-        source_config_object = {"version":[0,0], "src_classes":[], "sources":[]}
+        source_config_object = {"version":[CONFIG_MAJOR_VERSION, CONFIG_MINOR_VERSION], "src_classes":[], "sources":[]}
 
         #gather up all the source classes
         for source_class in self.source_classes:
             module = self.module_index[source_class].__name__
-            classname = source_class.__name__
+            classname = ".".join([source_class.__module__, source_class.__name__])
 
             src_class = {"module":module, "class":classname}
             source_config_object["src_classes"] += src_class
+
+        #gather up all the source class instances
+        for source in self.sources:
+            classname = source.__class__.__name__
+            config = source.store_config()
+
+            inst_class = {"class":classname, "data":config}
+            source_config_object["sources"] += inst_class
+
+    def load_config(self, input_config):
+        """The opposite of store_config, this function loads source config data from a dictionary."""
+
+        #Since we want to be able to load as much of the user's configuration as possible,
+        #let's store exception objects here and raise them after everything's done.
+        delay_exception = None
+
+        for class_config in input_config["src_classes"]:
+            try:
+                #Used to detect classes imported from one module that come from another module.
+                containment = class_config["class"].split('.')
+                __import__(class_config["module"])
+                __import__(".".join(containment[0:-1]))
+                class_module = sys.modules[class_config["module"]]
+                class_object = sys.modules[containment[0:-1]].__dict__[containment[-1]]
+
+                self.source_classes += class_object
+                self.module_index[class_object] = class_module
