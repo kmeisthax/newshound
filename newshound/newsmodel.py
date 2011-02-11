@@ -6,7 +6,18 @@ class InvalidAccountException(Exception):
 class BadResponseException(Exception):
     pass
 
+class BadConfigException(Exception):
+    pass
+
+class GenericSourcePlugin(Exception):
+    pass
+
 class BaseSection(object):
+    def __init__(self, *args, **kwargs):
+        self.callbacks = {"story":[]}
+        
+        super(BaseSection, self).__init__(*args, **kwargs)
+
     SECTION_SUBSCRIBED = 0
     SECTION_SUGGESTED = 50
     SECTION_UNSUBSRIBED = 100
@@ -63,15 +74,10 @@ class BaseSection(object):
 
 
 class BaseSource(BaseSection):
-    def __init__(self, *args, **kwargs):
-        self.callbacks = {"story":[]}
-        
-        super(BaseSection, self).__init__(*args, **kwargs)
-
     @classproperty
     def config_options(cls):
         """Return the information needed to configure a source."""
-        return {"url":{"type":"string/url"}}
+        return {"url":{"type":str, "ui_str":"URL", "required":True}}
     
     @classproperty
     def account_class(cls):
@@ -80,14 +86,58 @@ class BaseSource(BaseSection):
     @classproperty
     def allow_anonymous_reading(cls):
         return True
+
+    @classproperty
+    def allow_default_source(cls):
+        return True
         
-    def write_config_data(self, config_data):
-        #if type(account) != self.account_class:
-        #    if account != None and not self.allow_anonymous_reading:
-        #        raise InvalidAccountException
-            
-        #self.account = account
-        self.url = config_data["url"]
+    def store_config(self):
+        """Implementation of config storing that uses the config_options class property to determine serializable data.
+
+        Relies on a working config_options. If you don't want to provide one, override this function too."""
+        config_dict = {}
+
+        for config_name in self.config_options:
+            if self.__dict__.keys().count(config_name) > 0:
+                config_dict[config_name] = self.__dict__[config_name]
+
+        return config_dict
+
+    def load_config(self, input_config):
+        """Restore config from the input dictionary.
+
+        Like store_config, it operates based on config_options."""
+
+        for pkey in input_config:
+            if self.config_options.keys().count(pkey) > 0:
+                if type(input_config[pkey]) is self.config_options[pkey]["type"]:
+                    self.__dict__[pkey] = input_config[pkey]
+                else:
+                    raise BadConfigException()
+
+    @classproperty
+    def default_source(cls):
+        """Return a default source for a given object, if the source supports it.
+
+        A default source is intended for single-website plugins, such as a Reddit plugin. In these cases,
+        we should just place that source on the sources list automatically and let the user configure it later.
+
+        If a plugin's config_options specify defaults for all required options, and allow_default_source is True,
+        you'll get a default source plugin."""
+
+        if not cls.allow_default_source:
+            raise GenericSourcePlugin()
+
+        defaults = {}
+
+        for key in self.config_options:
+            if self.config_options[key].keys().count("default") > 0:
+                defaults[key] = self.config_options[key]["default"]
+            elif self.config_options[key].keys().count("required") > 0 and self.config_options[key]["required"]:
+                raise GenericSourcePlugin()
+
+        defsrc = cls()
+        defsrc.load_config(defaults)
     
 class BaseAccount(object):
     pass
