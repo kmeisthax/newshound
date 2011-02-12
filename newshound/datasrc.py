@@ -1,4 +1,4 @@
-from newshound import newsmodel
+from newshound import api
 import os.path, json
 
 CONFIG_MAJOR_VERSION = 0

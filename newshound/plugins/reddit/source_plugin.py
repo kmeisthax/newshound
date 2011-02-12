@@ -1,4 +1,4 @@
-from newshound import newsmodel
+from newshound import api
 from newshound.util import classproperty
 import urllib2, urlparse, json
 
@@ -8,14 +8,14 @@ KIND_LIST = "Listing"
 KIND_SUBREDDIT = "t5"
 KIND_SUBMISSION = "t3"
 
-class Subreddit(newsmodel.BaseSection):
+class Subreddit(api.BaseSection):
     def __init__(self, parent=None):
         self.parent = parent
         self.backing_data = {}
 
     def incorporate_json(self, secjson):
         if secjson["kind"] != KIND_SUBREDDIT:
-            raise newsmodel.BadResponseException()
+            raise api.BadResponseException()
 
         for key in secjson["data"].keys():
             self.backing_data[key] = secjson["data"][key]
@@ -24,7 +24,7 @@ class Subreddit(newsmodel.BaseSection):
         #there are no sub-subreddits
         return []
 
-class RedditSource(newsmodel.BaseSource, Subreddit):
+class RedditSource(api.BaseSource, Subreddit):
     def __init__(self, *args, **kwargs):
         self.subreddits = {}
 
@@ -52,7 +52,7 @@ class RedditSource(newsmodel.BaseSource, Subreddit):
         sections_json = json.load(urlfile)
 
         if sections_json["kind"] != KIND_LIST:
-            raise newsmodel.BadResponseException()
+            raise api.BadResponseException()
 
         returns = []
 
