@@ -72,12 +72,17 @@ class BaseSection(object):
         
         return
 
+    @property
+    def source_name(self):
+        return ""
 
 class BaseSource(BaseSection):
+
     @classproperty
     def config_options(cls):
         """Return the information needed to configure a source."""
-        return {"url":{"type":str, "ui_str":"URL", "required":True}}
+        return {"url":{"type":str, "ui_str":"URL", "required":True},
+                "name":{"type":str, "ui_str":"Name", "required":True}}
     
     @classproperty
     def account_class(cls):
@@ -130,14 +135,16 @@ class BaseSource(BaseSection):
 
         defaults = {}
 
-        for key in self.config_options:
-            if self.config_options[key].keys().count("default") > 0:
-                defaults[key] = self.config_options[key]["default"]
-            elif self.config_options[key].keys().count("required") > 0 and self.config_options[key]["required"]:
+        for key in cls.config_options:
+            if cls.config_options[key].keys().count("default") > 0:
+                defaults[key] = cls.config_options[key]["default"]
+            elif cls.config_options[key].keys().count("required") > 0 and cls.config_options[key]["required"]:
                 raise GenericSourcePlugin()
 
         defsrc = cls()
         defsrc.load_config(defaults)
+        
+        return defsrc
     
 class BaseAccount(object):
     pass

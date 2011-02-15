@@ -1,9 +1,9 @@
 #!/usr/bin/python
-
 import pygtk
 pygtk.require("2.0")
 import gtk
-import newshound.ui
 
-w = newshound.ui.BaseWindow()
+from newshound import Core, ui
+m=Core()
+w=ui.BaseWindow(m)
 gtk.main()

@@ -23,6 +23,10 @@ class Subreddit(api.BaseSection):
     def list_sections(self):
         #there are no sub-subreddits
         return []
+        
+    @property
+    def source_name(self):
+        return self.backing_data["display_name"]
 
 class RedditSource(api.BaseSource, Subreddit):
     def __init__(self, *args, **kwargs):
@@ -34,6 +38,7 @@ class RedditSource(api.BaseSource, Subreddit):
     def config_options(cls):
         defaults = super(RedditSource, cls).config_options
         defaults["url"]["default"] = "http://reddit.com/"
+        defaults["name"]["default"] = "Reddit"
         
         return defaults
         
@@ -42,8 +47,9 @@ class RedditSource(api.BaseSource, Subreddit):
         """We currently don't support accounts"""
         return None
         
-    def write_config_data(self, config_data):
-        self.url = config_data["url"]
+    @property
+    def source_name(self):
+        return self.name
         
     def list_sections(self):
         sec_url = urlparse.urljoin(self.url, SUBREDDIT_LISTING_URL)
@@ -65,4 +71,7 @@ class RedditSource(api.BaseSource, Subreddit):
                 self.subreddits[subreddit_json["data"]["id"]] = sr
 
             sr.incorporate_json(subreddit_json)
+            returns.append(sr)
+            
+        return returns
             

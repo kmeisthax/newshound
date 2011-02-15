@@ -1,5 +1,5 @@
 from newshound import api
-import os.path, json
+import os.path, json, sys
 
 CONFIG_MAJOR_VERSION = 0
 CONFIG_MINOR_VERSION = 0
@@ -16,14 +16,17 @@ class SourceManager(object):
 
         for entry in os.listdir(plugins_dir):
             entry_path = os.path.join(plugins_dir, entry)
+            if entry == "__init__.py":
+                continue #exclude the init script
+                
             if os.path.isdir(entry_path):
-                __import__("newshound.plugins." + entry)
-                plugin_modules += sys.modules["newshound.plugins." + entry]
+                res = __import__("newshound.plugins." + entry)
+                plugin_modules.append(sys.modules["newshound.plugins." + entry])
             elif os.path.isfile(entry_path):
                 entry_spl = os.path.splitext(entry)
-                if entry_spl[1] = ".py":
-                    __import__("newshound.plugins." + entry_spl[0])
-                    plugin_modules += sys.modules["newshound.plugins." + entry_spl[0]]
+                if entry_spl[1] == ".py":
+                    res = __import__("newshound.plugins." + entry_spl[0])
+                    plugin_modules.append(sys.modules["newshound.plugins." + entry_spl[0]])
         
         for module in plugin_modules:
             try:
@@ -37,14 +40,16 @@ class SourceManager(object):
 
                     if new_module:
                         try:
-                            self.sources += source_class.default_source
+                            self.sources.append(source_class.default_source)
                         except newsmodel.GenericSourcePlugin:
                             pass
+                        except Exception as e:
+                            raise e
                 
                 self.source_classes.extend(module.NEWS_PROVIDERS)
             except:
                 pass
-                
+        
     def store_config(self):
         """Form all the data in the source down to a data dictonary to be serialized to a file somehow."""
         source_config_object = {"version":[CONFIG_MAJOR_VERSION, CONFIG_MINOR_VERSION], "src_classes":[], "sources":[]}
@@ -55,7 +60,7 @@ class SourceManager(object):
             classname = ".".join([source_class.__module__, source_class.__name__])
 
             src_class = {"module":module, "class":classname}
-            source_config_object["src_classes"] += src_class
+            source_config_object["src_classes"].append(src_class)
 
         #gather up all the source class instances
         for source in self.sources:
@@ -63,7 +68,7 @@ class SourceManager(object):
             config = source.store_config()
 
             inst_class = {"class":classname, "data":config}
-            source_config_object["sources"] += inst_class
+            source_config_object["sources"].append(inst_class)
 
     def load_config(self, input_config):
         """The opposite of store_config, this function loads source config data from a dictionary."""
@@ -81,5 +86,35 @@ class SourceManager(object):
                 class_module = sys.modules[class_config["module"]]
                 class_object = sys.modules[containment[0:-1]].__dict__[containment[-1]]
 
-                self.source_classes += class_object
+                self.source_classes.append(class_object)
                 self.module_index[class_object] = class_module
+            except:
+                continue
+    
+    def create_source_tree(self):
+        """Creates a tree representing the hierarchy of sources and sections available.
+        
+        Sources are stored as such:
+        
+        return = [{"object": Reddit, "children": [{"object":/r/reddit.com}, ...]}]"""
+        
+        def children(source):
+            sections = source.list_sections()
+            r = []
+            
+            for section in sections:
+                secdict = {"object":section, "children":children(section)}
+                r.append(secdict)
+                    
+            return r
+            
+        s = []
+        
+        print self.sources
+        
+        for source in self.sources:
+            print "Source!"
+            srcdict = {"object":source, "children":children(source)}
+            s.append(srcdict)
+            
+        return s
