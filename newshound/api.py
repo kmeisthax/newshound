@@ -12,6 +12,14 @@ class BadConfigException(Exception):
 class GenericSourcePlugin(Exception):
     pass
 
+class BaseStory(object):
+    def __init__(self, parent):
+        self.parent = parent
+    
+    @property
+    def title(self):
+        return ""
+
 class BaseSection(object):
     def __init__(self, *args, **kwargs):
         self.callbacks = {"story":[]}

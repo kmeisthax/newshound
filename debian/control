@@ -10,6 +10,6 @@ Vcs-Browser: https://github.com/kmeisthax/newshound
 Package: python-newshound
 Section: python
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}, python-gtk2 (>=2.12)
+Depends: ${misc:Depends}, ${python:Depends}, python-gtk2 (>=2.12), python-cairo (>=1.8)
 Description: Simple news feed aggregation system.
  Integrates with Ayatana messaging menu.

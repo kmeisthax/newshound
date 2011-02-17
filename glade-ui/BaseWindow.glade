@@ -9,8 +9,8 @@
     </columns>
   </object>
   <object class="GtkWindow" id="BaseWindow">
-    <signal name="destroy" handler="onExit"/>
-    <signal name="delete_event" handler="onClosed"/>
+    <signal name="destroy" handler="onDestroyWindow"/>
+    <signal name="delete_event" handler="onCloseWindow"/>
     <child>
       <object class="GtkVBox" id="vbox1">
         <property name="visible">True</property>
@@ -150,19 +150,29 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <child>
-              <object class="GtkTreeView" id="NewsSourceTreeView">
+              <object class="GtkScrolledWindow" id="scrolledwindow1">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="model">NewsSourceTreeModel</property>
-                <signal name="cursor_changed" handler="onChangeSource"/>
+                <property name="hscrollbar_policy">automatic</property>
+                <property name="vscrollbar_policy">automatic</property>
                 <child>
-                  <object class="GtkTreeViewColumn" id="NewsSourceColumn">
-                    <property name="title">News Source</property>
+                  <object class="GtkTreeView" id="NewsSourceTreeView">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="model">NewsSourceTreeModel</property>
+                    <property name="headers_clickable">False</property>
+                    <property name="search_column">0</property>
+                    <signal name="cursor_changed" handler="onChangeSource"/>
                     <child>
-                      <object class="GtkCellRendererText" id="NewsSourceRowName"/>
-                      <attributes>
-                        <attribute name="text">0</attribute>
-                      </attributes>
+                      <object class="GtkTreeViewColumn" id="NewsSourceColumn">
+                        <property name="title">News Source</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="NewsSourceRowName"/>
+                          <attributes>
+                            <attribute name="text">0</attribute>
+                          </attributes>
+                        </child>
+                      </object>
                     </child>
                   </object>
                 </child>
@@ -176,8 +186,71 @@
               <object class="GtkVBox" id="vbox2">
                 <property name="visible">True</property>
                 <child>
-                  <object class="GtkToolbar" id="toolbar1">
+                  <object class="GtkHBox" id="hbox2">
                     <property name="visible">True</property>
+                    <child>
+                      <object class="GtkToolbar" id="toolbar1">
+                        <property name="visible">True</property>
+                        <property name="toolbar_style">icons</property>
+                        <child>
+                          <object class="GtkToolButton" id="toolbutton1">
+                            <property name="visible">True</property>
+                            <property name="label" translatable="yes">_Back</property>
+                            <property name="use_underline">True</property>
+                            <property name="stock_id">gtk-go-back</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="homogeneous">True</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkToolButton" id="toolitem1">
+                            <property name="visible">True</property>
+                            <property name="label" translatable="yes">_Forward</property>
+                            <property name="stock_id">gtk-go-forward</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSeparatorToolItem" id="toolbutton2">
+                            <property name="visible">True</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="homogeneous">True</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkStatusbar" id="SourceLocationBar">
+                        <property name="visible">True</property>
+                        <property name="spacing">2</property>
+                        <property name="has_resize_grip">False</property>
+                      </object>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="NewsSearchBar">
+                        <property name="width_request">100</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="invisible_char">•</property>
+                        <property name="primary_icon_stock">gtk-find</property>
+                      </object>
+                      <packing>
+                        <property name="pack_type">end</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -185,13 +258,34 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkScrolledWindow" id="NewsItemPane">
+                  <object class="GtkScrolledWindow" id="scrolledwin">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="hscrollbar_policy">automatic</property>
                     <property name="vscrollbar_policy">automatic</property>
                     <child>
-                      <placeholder/>
+                      <object class="GtkViewport" id="viewport1">
+                        <property name="visible">True</property>
+                        <property name="resize_mode">queue</property>
+                        <child>
+                          <object class="GtkEventBox" id="eventbox1">
+                            <property name="visible">True</property>
+                            <property name="app_paintable">True</property>
+                            <signal name="expose_event" handler="onDrawBackground"/>
+                            <child>
+                              <object class="GtkVBox" id="vbox3">
+                                <property name="visible">True</property>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
                     </child>
                   </object>
                   <packing>

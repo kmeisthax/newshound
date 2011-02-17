@@ -1,11 +1,10 @@
-import gtk
+import gtk, cairo
 from newshound import datasrc
 
 class BaseWindow(object):
     MENU_ITEM_QUIT = "Quit"
 
     def __init__(self, core):
-        print "Starting up!"
         self.core = core
         
         self.builder = gtk.Builder()
@@ -45,6 +44,31 @@ class BaseWindow(object):
         """Called when a toplevel window is destroyed."""
         if widget == self.window:
             gtk.main_quit()
+
+    def onDrawBackground(self, widget, event, *data_args):
+        win = widget.window
+        Xr = win.cairo_create()
+        
+        fillall = cairo.SolidPattern(1.0, 1.0, 1.0, 1.0)
+        Xr.set_source(fillall)
+        Xr.paint()
+        
+        rect = win.get_frame_extents()
+        grad = cairo.LinearGradient(0, 0, 0, 250)
+        
+        grad.add_color_stop_rgba(0.0, 0.70, 0.70, 1.0, 1.0)
+        grad.add_color_stop_rgba(1.0, 0.70, 0.70, 1.0, 0.0)
+        
+        Xr.set_source(grad)
+        
+        Xr.move_to(0, 0)
+        Xr.line_to(rect.width, 0)
+        Xr.line_to(rect.width, rect.height)
+        Xr.line_to(0, rect.height)
+        Xr.line_to(0, 0)
+        
+        Xr.fill()
+        return False
 
     def onChangeSource(self, treeview, *data_args):
         print treeview.get_cursor()
